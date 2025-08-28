@@ -6,7 +6,7 @@ CONTENTS *docpair-contents*
   1. Overview                     |docpair-overview|
   2. Installation                 |docpair-install|
   3. Setup & Configuration        |docpair-setup|
-  4. Command                      |:Documented|
+  4. Command                      |docpair-command|
   5. Options                      |docpair-options|
   6. Usage & Examples             |docpair-usage|
   7. Notes & Limitations          |docpair-notes|
