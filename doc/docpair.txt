@@ -56,7 +56,7 @@ Lua:
 <
 
 -------------------------------------------------------------------------------
-COMMAND *docpair-command* *:Documented*
+COMMAND *docpair-command*
 
 *:Documented* {file} [infofile][!]
     Open {file} on the left and its notes on the right.
