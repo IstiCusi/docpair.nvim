@@ -58,8 +58,9 @@ Lua:
 -------------------------------------------------------------------------------
 COMMAND *docpair-command*
 
-*:Documented* {file} [infofile][!]
-    Open {file} on the left and its notes on the right.
+*:Documented* [file] [infofile][!]
+    Open [file] on the left and its notes on the right.
+    Without arguments, open notes for the active buffer
 
     Placement:
       - Notes live in <dir-of-{file}>/.documented/
@@ -78,7 +79,7 @@ COMMAND *docpair-command*
       - Without [!], open in a new tab.
 
     Completion:
-      - {file} supports filename completion.
+      - [file] supports filename completion.
 
 -------------------------------------------------------------------------------
 OPTIONS *docpair-options*
