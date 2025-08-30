@@ -62,15 +62,15 @@ return {
 ### Command
 
 ```
-:Documented {file} [infofile][!]
+:Documented [file] [infofile][!]
 ```
 
-- Opens `{file}` on the **left** and its notes on the **right**.
-- Notes are always written under `<dir-of-{file}>/.documented/`.
-- If `[infofile]` is omitted, the default name is `<basename({file})>_info`.
+- Opens `[file]` on the **left** and its notes on the **right**.
+- Notes are always written under `<dir-of-[file]>/.documented/`, or when the folder is not accessable because of write restrictions to `~/.config/docpair/tree/`
+- If `[infofile]` is omitted, the default name is `<basename([file])>_info`.
 - If `[infofile]` is provided, only its **basename** is used; it still goes into `.documented/`.
 - `!` keeps the current tab (closes other windows) before vsplitting; without `!`, a new tab is used.
-- `{file}` supports **filename completion**.
+- `[file]` supports **filename completion**.
 
 ### Examples
 
@@ -133,7 +133,6 @@ After installation:
 
 ```
 :help docpair
-:help :Documented
 ```
 
 If Neovim doesn’t find the page yet, generate helptags once:
