@@ -1,6 +1,24 @@
 local M = {}
 M._opts = { info_filetype = "markdown" }
 
+local function resolve_info_dir(f1)
+  local dir1 = vim.fn.fnamemodify(f1, ":h")
+
+  if vim.fn.filewritable(dir1) == 2 then
+    return dir1 .. "/.documented"
+  end
+
+  local config_home = vim.fn.expand("~/.config")
+  local tree_root   = config_home .. "/docpair/tree"
+
+  local abs_path    = vim.fn.fnamemodify(f1, ":p:h")
+
+  local sep = (abs_path:sub(1,1) == "/") and "" or "/"
+  local target_dir = tree_root .. sep .. abs_path
+
+  return target_dir
+end
+
 local function abs(path)
 	return vim.fn.fnamemodify(path, ":p")
 end
@@ -24,11 +42,16 @@ local function create_command()
       f1 = abs(args[1])
     end
 
-		local dir1 = vim.fn.fnamemodify(f1, ":h")
-		local info_dir = dir1 .. "/.documented"
-		if vim.fn.isdirectory(info_dir) == 0 then
-			vim.fn.mkdir(info_dir, "p")
-		end
+		-- local dir1 = vim.fn.fnamemodify(f1, ":h")
+		-- local info_dir = dir1 .. "/.documented"
+		-- if vim.fn.isdirectory(info_dir) == 0 then
+		-- 	vim.fn.mkdir(info_dir, "p")
+		-- end
+
+    local info_dir = resolve_info_dir(f1)
+    if vim.fn.isdirectory(info_dir) == 0 then
+      vim.fn.mkdir(info_dir, "p")
+    end
 
 		local info_name
 		if #args == 2 then
