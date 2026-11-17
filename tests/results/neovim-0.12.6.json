@@ -1,0 +1,48 @@
+{
+  "neovim": "NVIM v0.12.6, Linux x86_64, Release, LuaJIT 2.1.1774638290",
+  "tests": 54,
+  "failures": [],
+  "errors": [],
+  "seconds": 7.810257912002271,
+  "timings": [
+    {
+      "case": "200k_open_seconds",
+      "value": 0.10006908799914527
+    },
+    {
+      "case": "25_large_switches_including_ui_settle_seconds",
+      "value": 0.9455644010013202
+    },
+    {
+      "case": "large_process_memory",
+      "value": [
+        "VmHWM:\t   50528 kB",
+        "VmRSS:\t   50528 kB"
+      ]
+    },
+    {
+      "case": "200k_syntax_open_and_navigation_seconds",
+      "value": 2.225621104000311
+    }
+  ],
+  "fixture_sizes": {
+    "alpha.c": {
+      "source_lines": 50000,
+      "source_bytes": 1227780,
+      "notes_bytes": 1738894
+    },
+    "beta.c": {
+      "source_lines": 80000,
+      "source_bytes": 1977780,
+      "notes_bytes": 2708894
+    },
+    "huge.c": {
+      "source_lines": 200000,
+      "source_bytes": 5337780,
+      "notes_bytes": 23088895
+    }
+  },
+  "release_artifact_sha256": "474430d53e6264f6d6dd18db42d6dc9df3a1b56ca9e88a325bbf860e1a811d87",
+  "base_commit": "8beb723e1eee259e2c587d5304d0d64e404a6931",
+  "measurement_note": "Single local run including Python/RPC/UI settle overhead; not an isolated plugin benchmark."
+}

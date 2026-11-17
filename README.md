@@ -1,155 +1,136 @@
 # docpair.nvim
 
-Keep your source **pristine**. Put your thoughts, checklists, and long‑form explanations in a **sidecar** file that stays line‑synchronous with the code.
+Read and edit source code beside a matching notes file. A documented view is
+managed as a pair of windows, including across native Neovim tabs and buffer
+switches. Notes are ordinary text files in `.documented/`.
 
-`docpair.nvim` opens your source on the left and a matching notes file on the right. Each line *N* in the source corresponds to line *N* in your notes — simple, predictable, and perfect for learning APIs, reviewing code, teaching, or documenting thought processes **without** cluttering the source.
+**This version targets Neovim 0.12 and is tested on stable 0.12.6.**
 
+![Source and sidecar notes](./pic.png)
 
-![docpair.nvim – line-synchronous sidecar notes](./pic.png)
-
-
----
-
-## Why this exists
-
-Code comments are great for documenting *what* an API does and *why* a decision was made. They are less great for:
-
-- exploratory notes and “thinking out loud”
-- step‑by‑step tutorials and learning trails
-- temporary to‑dos, questions, or review remarks
-- long checklists and experiment logs
-
-Those belong next to the code — not **inside** it. `docpair.nvim` gives you that adjacent space, kept in lockstep with your source, while your repository stays clean and your diffs focused on code.
-
----
-
-## Features
-
-- **Line‑synchronous pairing**
-  Scroll or move in one window; the other stays aligned by line number.
-
-- **Sidecar storage**
-  Notes live in a hidden folder next to your file:
-  `<dir-of-source>/.documented/`
-
-- **Zero ceremony**
-  No new formats, no ASTs, no magic. It’s just files and window options.
-
-- **Minimal configuration**
-  Choose the notes buffer’s filetype (default: `markdown`) and go.
-
----
-
-## Installation (lazy.nvim)
+## Install
 
 ```lua
--- in: ~/.config/nvim/lua/plugins/docpair.lua
 return {
-  "isticusi/docpair.nvim",
-  main = "docpair",
-  lazy = false,                -- eager so :Documented has filename completion immediately
+  "IstiCusi/docpair.nvim",
+  lazy = false,
   opts = { info_filetype = "markdown" },
-  config = true,               -- calls require("docpair").setup(opts)
 }
 ```
 
-> Not using lazy.nvim? The plugin ships with `plugin/docpair.lua` which auto‑calls `require("docpair").setup({})` for you.
+Native packages load `plugin/docpair.lua` without a plugin manager. Optional
+configuration:
 
----
-
-## Usage
-
-### Command
-
-```
-:Documented [file] [infofile][!]
+```lua
+require("docpair").setup({ info_filetype = "markdown" })
 ```
 
-- Opens `[file]` on the **left** and its notes on the **right**.
-- Notes are always written under `<dir-of-[file]>/.documented/`, or when the folder is not accessable because of write restrictions to `~/.config/docpair/tree/`
-- If `[infofile]` is omitted, the default name is `<basename([file])>_info`.
-- If `[infofile]` is provided, only its **basename** is used; it still goes into `.documented/`.
-- `!` keeps the current tab (closes other windows) before vsplitting; without `!`, a new tab is used.
-- `[file]` supports **filename completion**.
-
-### Examples
+## Open and navigate
 
 ```vim
 :Documented src/main.c
 :Documented src/main.c main_notes.md
-:Documented! README.md
+:Documented!
 ```
 
----
+`:Documented[!] [file] [infofile]` uses the active buffer if `file` is omitted.
+The source starts on the left, notes on the right, regardless of `splitright`.
+Without `!` it opens a new tab; `!` uses the current window and preserves other
+splits. Repeating the command on the same pair keeps the layout and position,
+and extends blank padding if the source grew.
 
-## What files get created?
+| Native operation | Pair behavior |
+| --- | --- |
+| `:edit`, `:buffer`, `:bnext`, `:bprevious`, Ctrl-^, quickfix jump | Selecting a source inside either pane updates both panes. Notes are excluded from `:bnext`. |
+| `:split`, `:tab split` of an associated file | The new source or notes view gets its own partner. |
+| `gt`, `gT`, `:tabmove` | Each pair retains its own position; shared buffers retain shared text. |
+| Ctrl-W T | The moved pane gets its partner in the destination tab. |
+| `:only` | The retained pane gets its partner back. |
+| `:close` or `:q` in a pair | Closes the pair, subject to Neovim's checks for modified files. `:q` on the final pair exits. |
+| `:tabclose`, `:tabonly` | Removed tabs stay removed. |
+| `:bdelete`, `:bwipeout` of a paired buffer | Removes its paired views; normal modified-buffer checks still apply. |
+| `:mksession`, `:source Session.vim` | Restores associations using a small companion `Session.vim.docpair.json`. |
+| `:saveas`, `:file` | The association follows the renamed buffer. The other file stays at its existing path. |
 
-- The first time you pair a file, a hidden folder is created next to it:
-  ```
-  <dir-of-source>/.documented/
-  ```
-- A notes file is created inside that folder:
-  - `./.documented/<basename(source)>_info` (default), or
-  - `./.documented/<basename(infofile)>` (when you pass a second argument)
-- The notes file is **padded with empty lines** to match the source’s line count, ensuring line‑to‑line correspondence.
+Registered files shown in other tabs are paired too. Unrelated files opened
+outside a pair, help, quickfix, preview and floating windows remain independent.
+Several pairs may coexist in one tab. Vertical movement synchronizes only the
+actual partner, including wheel scrolling over an unfocused pane. Horizontal
+scrolling and cursor columns are independent.
 
-Version‑control them as you like; they’re regular text files.
+Additional commands:
 
----
+- `:DocumentedClose` closes the current pair without forcing modified files.
+- `:DocumentedDetach` keeps both windows and releases their association in this
+  view, restoring the window options captured when it was paired. Run
+  `:Documented!` to pair that view again.
+- `:DocumentedRepair` reconciles the layout after commands that suppressed
+  normal editor events.
 
-## Configuration
+## Files and saving
 
-```lua
-require("docpair").setup({
-  -- Filetype to use for the right‑hand notes buffer
-  info_filetype = "markdown",
-})
+Default notes path: `<source-directory>/.documented/<source-basename>_info`.
+A custom `infofile` uses only its basename. If the source directory is not
+writable, the existing fallback convention is retained:
+`~/.config/docpair/tree<absolute-source-directory>/<notes-name>`.
+
+Opening a pair does **not** write source or notes to disk. It uses the current
+loaded buffers, including unsaved text and undo history. Short notes are padded
+with empty lines in memory to match the source length. Brand-new empty padding
+is not marked as a user edit; padding an existing notes file is a buffer change.
+The notes directory is created when notes are first written.
+
+Use `:write` in the relevant pane, or `:wall` for all modified files. Edited notes
+remain in a hidden buffer when switching away, even with `nohidden`; they are
+included in `:wall` and prevent an unsafe `:qall`. Neovim's explicit force
+commands such as `:qall!` retain their normal destructive meaning.
+
+Session metadata stores file paths only, including custom note names. It is not
+a backup of unsaved text. Save your work separately. After renaming a buffer,
+keep the session metadata if you need the non-default association next time;
+the plugin does not rename or copy its partner on disk.
+
+## Limits
+
+- **Line-based, not semantic:** line N corresponds to line N. Inserting or
+  deleting lines does not relocate notes to follow a function. Extending blank
+  padding cannot repair that semantic drift.
+- Both buffers stay loaded. The notes pane shows the whole notes file, not only
+  documentation for the current scope. Very long notes remain long physical
+  lines because wrapping, folds and concealment are disabled to preserve line
+  alignment. Markdown highlighting works; rendered Markdown layouts are not
+  guaranteed to remain aligned.
+- These are still two native Neovim buffers. The manager coordinates their
+  windows; it does not introduce a new indivisible native window type. Manual
+  window rearrangement may change their geometry, while their IDs and partner
+  association remain intact. Insufficient screen space can prevent a split.
+- Commands using `noautocmd`, session tools that skip native session events,
+  and plugins that continually replace layouts may require
+  `:DocumentedRepair` or explicit integration. Compatibility with every plugin
+  is not claimed. Symlink aliases are not canonicalized.
+- One source has one sidecar in a running session. Reusing an already associated
+  notes path for another source is rejected. Comment extraction, scope anchors,
+  independently scrolling document sections and switchable document providers
+  are future work.
+
+## Tests
+
+The tests launch real Neovim processes; there are no mocked window APIs.
+Python is needed only for development tests, not for using the plugin.
+
+```sh
+python -m pip install pynvim pexpect
+python tests/run.py --nvim /path/to/nvim --output /tmp/docpair-results.json
+python tests/tui.py --nvim /path/to/nvim --output /tmp/docpair-tui.json
 ```
 
----
+The integration suite generates files with 50,000, 80,000 and 200,000 source
+lines, including a 23 MB notes file and a 16,000-character line. It covers
+sessions, multiple pairs, modified buffers, undo, native navigation, mouse
+scrolling, resizing and C/Markdown syntax highlighting. The separate TUI test
+types commands and navigation into a real terminal, including clean shutdown.
 
-## Behavior & Defaults
+For help, use `:help docpair`. If needed, generate tags with
+`:helptags {path-to-docpair.nvim}/doc`.
 
-- Both windows start at the **top** (`normal! gg`) with wrapping, soft line breaks, folds, and concealment **disabled** in the notes window to keep alignment stable.
-- Synchronization uses Neovim’s native `scrollbind` and `cursorbind`.
-- If the source grows **after** you ran `:Documented`, simply run the command again to pad the notes file to the new length.
-
----
-
-## Philosophy
-
-- **Stay out of the way.** The plugin leverages built‑in window mechanics. No bespoke formats, no complex state, no DSL.
-- **Keep sources clean.** Thought processes, explanations, and “learning diaries” live in a sidecar file. Your code and public API comments remain focused.
-- **Learn by doing.** Mapping notes 1:1 to lines encourages incremental API exploration without ever losing context.
-- **Own your files.** Everything is plain text on disk. Nothing is trapped in a database or custom index.
-
-You shouldn’t need weeks to learn yet another Neovim ecosystem. This is minimal by design — and still solves a very real problem elegantly.
-
----
-
-## Help
-
-After installation:
-
-```
-:help docpair
-```
-
-If Neovim doesn’t find the page yet, generate helptags once:
-
-```
-:helptags {path-to-docpair.nvim}/doc
-```
-
----
-
-## Limitations
-
-- Line‑synchronous only (by design). There’s no structural/semantic mapping.
-- Notes are padded at command time. Re‑run `:Documented` to extend padding after the source grows.
-
----
-
-## License
-
-MIT
+MIT license.

@@ -1,0 +1,357 @@
+[
+  {
+    "case": "default_splitright_false",
+    "seconds": 0.11645563500132994,
+    "state": {
+      "current": 1002,
+      "tabs": [
+        [
+          {
+            "id": 1000,
+            "scrollbind": false,
+            "position": [
+              0,
+              0
+            ],
+            "cursorbind": false,
+            "file": "",
+            "cursor": [
+              1,
+              0
+            ]
+          }
+        ],
+        [
+          {
+            "id": 1002,
+            "scrollbind": false,
+            "position": [
+              1,
+              0
+            ],
+            "cursorbind": false,
+            "file": "$FIXTURES/alpha.c",
+            "cursor": [
+              1,
+              0
+            ]
+          },
+          {
+            "id": 1003,
+            "scrollbind": false,
+            "position": [
+              1,
+              80
+            ],
+            "cursorbind": false,
+            "file": "$FIXTURES/.documented/alpha.c_info",
+            "cursor": [
+              1,
+              0
+            ]
+          }
+        ]
+      ],
+      "scrollopt": "ver,jump"
+    }
+  },
+  {
+    "case": "source_edit_other_file",
+    "seconds": 0.23977716299850727,
+    "state": {
+      "current": 1002,
+      "tabs": [
+        [
+          {
+            "file": "",
+            "cursorbind": false,
+            "id": 1000,
+            "cursor": [
+              1,
+              0
+            ],
+            "scrollbind": false,
+            "position": [
+              0,
+              0
+            ]
+          }
+        ],
+        [
+          {
+            "file": "$FIXTURES/beta.c",
+            "cursorbind": false,
+            "id": 1002,
+            "cursor": [
+              1,
+              0
+            ],
+            "scrollbind": false,
+            "position": [
+              1,
+              0
+            ]
+          },
+          {
+            "file": "$FIXTURES/.documented/beta.c_info",
+            "cursorbind": false,
+            "id": 1003,
+            "cursor": [
+              1,
+              0
+            ],
+            "scrollbind": false,
+            "position": [
+              1,
+              80
+            ]
+          }
+        ]
+      ],
+      "scrollopt": "ver,jump"
+    }
+  },
+  {
+    "case": "source_tab_split",
+    "seconds": 0.0968707110005198,
+    "state": {
+      "tabs": [
+        [
+          {
+            "file": "",
+            "cursor": [
+              1,
+              0
+            ],
+            "id": 1000,
+            "position": [
+              0,
+              0
+            ],
+            "scrollbind": false,
+            "cursorbind": false
+          }
+        ],
+        [
+          {
+            "file": "$FIXTURES/alpha.c",
+            "cursor": [
+              1,
+              0
+            ],
+            "id": 1002,
+            "position": [
+              1,
+              0
+            ],
+            "scrollbind": false,
+            "cursorbind": false
+          },
+          {
+            "file": "$FIXTURES/.documented/alpha.c_info",
+            "cursor": [
+              1,
+              0
+            ],
+            "id": 1003,
+            "position": [
+              1,
+              80
+            ],
+            "scrollbind": false,
+            "cursorbind": false
+          }
+        ],
+        [
+          {
+            "file": "$FIXTURES/alpha.c",
+            "cursor": [
+              1,
+              0
+            ],
+            "id": 1004,
+            "position": [
+              1,
+              0
+            ],
+            "scrollbind": false,
+            "cursorbind": false
+          },
+          {
+            "file": "$FIXTURES/.documented/alpha.c_info",
+            "cursor": [
+              1,
+              0
+            ],
+            "id": 1005,
+            "position": [
+              1,
+              80
+            ],
+            "scrollbind": false,
+            "cursorbind": false
+          }
+        ]
+      ],
+      "current": 1004,
+      "scrollopt": "ver,jump"
+    }
+  },
+  {
+    "case": "close_notes",
+    "seconds": 0.1176508050011762,
+    "state": {
+      "tabs": [
+        [
+          {
+            "cursor": [
+              1,
+              0
+            ],
+            "id": 1000,
+            "cursorbind": false,
+            "scrollbind": false,
+            "file": "",
+            "position": [
+              0,
+              0
+            ]
+          }
+        ]
+      ],
+      "current": 1000,
+      "scrollopt": "ver,jump"
+    }
+  },
+  {
+    "case": "unsaved_line_counts",
+    "source": 5,
+    "notes": 5
+  },
+  {
+    "case": "unsaved_source",
+    "seconds": 0.06601119399783784,
+    "state": {
+      "current": 1002,
+      "scrollopt": "ver,jump",
+      "tabs": [
+        [
+          {
+            "file": "$FIXTURES/unsaved.c",
+            "id": 1000,
+            "cursor": [
+              1,
+              0
+            ],
+            "position": [
+              0,
+              0
+            ],
+            "scrollbind": false,
+            "cursorbind": false
+          },
+          {
+            "file": "$FIXTURES/.documented/unsaved.c_info",
+            "id": 1004,
+            "cursor": [
+              1,
+              0
+            ],
+            "position": [
+              0,
+              80
+            ],
+            "scrollbind": false,
+            "cursorbind": false
+          }
+        ],
+        [
+          {
+            "file": "$FIXTURES/unsaved.c",
+            "id": 1002,
+            "cursor": [
+              1,
+              0
+            ],
+            "position": [
+              1,
+              0
+            ],
+            "scrollbind": false,
+            "cursorbind": false
+          },
+          {
+            "file": "$FIXTURES/.documented/unsaved.c_info",
+            "id": 1003,
+            "cursor": [
+              1,
+              0
+            ],
+            "position": [
+              1,
+              80
+            ],
+            "scrollbind": false,
+            "cursorbind": false
+          }
+        ]
+      ]
+    }
+  },
+  {
+    "case": "large_200k_lines_open",
+    "seconds": 0.21037847600018722,
+    "state": {
+      "current": 1002,
+      "scrollopt": "ver,jump",
+      "tabs": [
+        [
+          {
+            "cursorbind": false,
+            "file": "",
+            "cursor": [
+              1,
+              0
+            ],
+            "id": 1000,
+            "position": [
+              0,
+              0
+            ],
+            "scrollbind": false
+          }
+        ],
+        [
+          {
+            "cursorbind": false,
+            "file": "$FIXTURES/huge.c",
+            "cursor": [
+              1,
+              0
+            ],
+            "id": 1002,
+            "position": [
+              1,
+              0
+            ],
+            "scrollbind": false
+          },
+          {
+            "cursorbind": false,
+            "file": "$FIXTURES/.documented/huge.c_info",
+            "cursor": [
+              1,
+              0
+            ],
+            "id": 1003,
+            "position": [
+              1,
+              80
+            ],
+            "scrollbind": false
+          }
+        ]
+      ]
+    }
+  }
+]

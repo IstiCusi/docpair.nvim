@@ -1,0 +1,345 @@
+[
+  {
+    "case": "default_splitright_false",
+    "seconds": 0.17708025500178337,
+    "state": {
+      "scrollopt": "ver,hor,jump",
+      "current": 1001,
+      "tabs": [
+        [
+          {
+            "cursor": [
+              1,
+              0
+            ],
+            "file": "",
+            "id": 1000,
+            "position": [
+              0,
+              0
+            ],
+            "scrollbind": false,
+            "cursorbind": false
+          }
+        ],
+        [
+          {
+            "cursor": [
+              1,
+              0
+            ],
+            "file": "$FIXTURES/.documented/alpha.c_info",
+            "id": 1002,
+            "position": [
+              1,
+              0
+            ],
+            "scrollbind": true,
+            "cursorbind": true
+          },
+          {
+            "cursor": [
+              1,
+              0
+            ],
+            "file": "$FIXTURES/alpha.c",
+            "id": 1001,
+            "position": [
+              1,
+              81
+            ],
+            "scrollbind": true,
+            "cursorbind": true
+          }
+        ]
+      ]
+    }
+  },
+  {
+    "case": "source_edit_other_file",
+    "seconds": 0.195458731999679,
+    "state": {
+      "tabs": [
+        [
+          {
+            "id": 1000,
+            "cursor": [
+              1,
+              0
+            ],
+            "file": "",
+            "cursorbind": false,
+            "position": [
+              0,
+              0
+            ],
+            "scrollbind": false
+          }
+        ],
+        [
+          {
+            "id": 1001,
+            "cursor": [
+              1,
+              0
+            ],
+            "file": "$FIXTURES/beta.c",
+            "cursorbind": false,
+            "position": [
+              1,
+              0
+            ],
+            "scrollbind": false
+          },
+          {
+            "id": 1002,
+            "cursor": [
+              1,
+              0
+            ],
+            "file": "$FIXTURES/.documented/alpha.c_info",
+            "cursorbind": true,
+            "position": [
+              1,
+              80
+            ],
+            "scrollbind": true
+          }
+        ]
+      ],
+      "scrollopt": "ver,hor,jump",
+      "current": 1001
+    }
+  },
+  {
+    "case": "source_tab_split",
+    "seconds": 0.1544558399982634,
+    "state": {
+      "tabs": [
+        [
+          {
+            "id": 1000,
+            "position": [
+              0,
+              0
+            ],
+            "scrollbind": false,
+            "cursorbind": false,
+            "file": "",
+            "cursor": [
+              1,
+              0
+            ]
+          }
+        ],
+        [
+          {
+            "id": 1001,
+            "position": [
+              1,
+              0
+            ],
+            "scrollbind": true,
+            "cursorbind": true,
+            "file": "$FIXTURES/alpha.c",
+            "cursor": [
+              1,
+              0
+            ]
+          },
+          {
+            "id": 1002,
+            "position": [
+              1,
+              80
+            ],
+            "scrollbind": true,
+            "cursorbind": true,
+            "file": "$FIXTURES/.documented/alpha.c_info",
+            "cursor": [
+              1,
+              0
+            ]
+          }
+        ],
+        [
+          {
+            "id": 1003,
+            "position": [
+              1,
+              0
+            ],
+            "scrollbind": false,
+            "cursorbind": false,
+            "file": "$FIXTURES/alpha.c",
+            "cursor": [
+              1,
+              0
+            ]
+          }
+        ]
+      ],
+      "scrollopt": "ver,hor,jump",
+      "current": 1003
+    }
+  },
+  {
+    "case": "close_notes",
+    "seconds": 0.09988289399916539,
+    "state": {
+      "current": 1001,
+      "tabs": [
+        [
+          {
+            "scrollbind": false,
+            "file": "",
+            "cursor": [
+              1,
+              0
+            ],
+            "cursorbind": false,
+            "id": 1000,
+            "position": [
+              0,
+              0
+            ]
+          }
+        ],
+        [
+          {
+            "scrollbind": true,
+            "file": "$FIXTURES/alpha.c",
+            "cursor": [
+              1,
+              0
+            ],
+            "cursorbind": true,
+            "id": 1001,
+            "position": [
+              1,
+              0
+            ]
+          }
+        ]
+      ],
+      "scrollopt": "ver,hor,jump"
+    }
+  },
+  {
+    "case": "unsaved_line_counts",
+    "source": 5,
+    "notes": 2
+  },
+  {
+    "case": "unsaved_source",
+    "seconds": 0.06393860999742174,
+    "state": {
+      "tabs": [
+        [
+          {
+            "id": 1000,
+            "position": [
+              0,
+              0
+            ],
+            "scrollbind": false,
+            "cursor": [
+              1,
+              0
+            ],
+            "file": "$FIXTURES/unsaved.c",
+            "cursorbind": false
+          }
+        ],
+        [
+          {
+            "id": 1002,
+            "position": [
+              1,
+              0
+            ],
+            "scrollbind": true,
+            "cursor": [
+              1,
+              0
+            ],
+            "file": "$FIXTURES/.documented/unsaved.c_info",
+            "cursorbind": true
+          },
+          {
+            "id": 1001,
+            "position": [
+              1,
+              81
+            ],
+            "scrollbind": true,
+            "cursor": [
+              1,
+              0
+            ],
+            "file": "$FIXTURES/unsaved.c",
+            "cursorbind": true
+          }
+        ]
+      ],
+      "scrollopt": "ver,hor,jump",
+      "current": 1001
+    }
+  },
+  {
+    "case": "large_200k_lines_open",
+    "seconds": 0.4226555429995642,
+    "state": {
+      "current": 1001,
+      "tabs": [
+        [
+          {
+            "cursor": [
+              1,
+              0
+            ],
+            "position": [
+              0,
+              0
+            ],
+            "scrollbind": false,
+            "cursorbind": false,
+            "id": 1000,
+            "file": ""
+          }
+        ],
+        [
+          {
+            "cursor": [
+              1,
+              0
+            ],
+            "position": [
+              1,
+              0
+            ],
+            "scrollbind": true,
+            "cursorbind": true,
+            "id": 1002,
+            "file": "$FIXTURES/.documented/huge.c_info"
+          },
+          {
+            "cursor": [
+              1,
+              0
+            ],
+            "position": [
+              1,
+              81
+            ],
+            "scrollbind": true,
+            "cursorbind": true,
+            "id": 1001,
+            "file": "$FIXTURES/huge.c"
+          }
+        ]
+      ],
+      "scrollopt": "ver,hor,jump"
+    }
+  }
+]

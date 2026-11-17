@@ -1,139 +1,90 @@
-*docpair.nvim* *docpair*                                      Last change: 2025-08-23
+*docpair.nvim* *docpair*                                  Last change: 2026-11-17
 
-docpair.nvim — Pair a source file with a sidecar notes file, kept line-synchronous.
+docpair.nvim: managed source/notes window pairs. Tested with Neovim 0.12.6.
 
-CONTENTS *docpair-contents*
-  1. Overview                     |docpair-overview|
-  2. Installation                 |docpair-install|
-  3. Setup & Configuration        |docpair-setup|
-  4. Command                      |docpair-command|
-  5. Options                      |docpair-options|
-  6. Usage & Examples             |docpair-usage|
-  7. Notes & Limitations          |docpair-notes|
-  8. Helptags                     |docpair-helptags|
+COMMANDS                                                *docpair-commands*
 
--------------------------------------------------------------------------------
-OVERVIEW *docpair-overview*
+:Documented[!] [file] [infofile]                          *:Documented*
+    Pair the named source or active file buffer with its notes. Source left,
+    notes right. Without ! use a new tab; ! preserves the current tab and
+    unrelated windows. Repeating on the current pair extends blank padding
+    without resetting the cursor or adding more windows.
 
-docpair is intentionally simple: it opens your source on the left and a
-matching “sidecar” notes file on the right, stored under:
-    <dir-of-source>/.documented/
+    Notes: <source-directory>/.documented/<source-basename>_info
+    Custom infofile: use its basename in the same directory.
+    Non-writable source directory fallback:
+        ~/.config/docpair/tree<absolute-source-directory>/<notes-name>
 
-The two windows are *line-synchronous*: scrolling or moving the cursor in one
-keeps the other aligned by line. There is no AST, no sections, no magic — just
-clean 1:1 line correspondence.
+:DocumentedClose                                         *:DocumentedClose*
+    Close the current pair without forcing a modified buffer closed.
 
-Why this design?
-- Keep your *source pristine* — no inline comments or big blocks of prose.
-- Write explanations, checklists, or commentary next to code *without clutter*.
-- Excellent for *learning APIs*: explain each line/step while seeing the code.
-- Great for reviews, workshops, and teaching material.
+:DocumentedDetach                                        *:DocumentedDetach*
+    Keep both windows, stop managing this view, restore saved window options.
+    Use :Documented! to attach the view again.
 
--------------------------------------------------------------------------------
-INSTALLATION *docpair-install*
+:DocumentedRepair                                        *:DocumentedRepair*
+    Reconcile registered pairs after commands that suppressed editor events.
 
-With lazy.nvim (local path example):
+CONFIGURATION                                           *docpair-setup*
 >
-  return {
-    dir = vim.fn.stdpath("config") .. "/scripts/docpair",
-    main = "docpair",
-    lazy = false,  -- eager so :Documented has file completion immediately
-    opts = { info_filetype = "markdown" },
-    config = true,
-  }
+    require('docpair').setup({ info_filetype = 'markdown' })
 <
+Native package loading runs setup with defaults. The only option is the notes
+filetype, default markdown. Plugin use requires no Python dependencies.
 
-From GitHub, replace `dir = ...` with `"user/docpair.nvim"`.
+NAVIGATION                                              *docpair-navigation*
 
--------------------------------------------------------------------------------
-SETUP & CONFIGURATION *docpair-setup*
+Selecting another file within either pane updates the pair. :bnext skips notes.
+Splits and tab splits of registered files receive their own partner. Several
+pairs may exist in one tab. Tabs retain their own cursor/view positions while
+sharing buffer contents. Help, quickfix, preview and floating windows are not
+paired. Ordinary unregistered files outside a pair remain unaffected.
 
-Lua:
->
-  require("docpair").setup({
-    info_filetype = "markdown",  -- filetype for the right-hand notes buffer
-  })
-<
+Vertical scrolling and cursor rows follow only the partner, including the mouse
+wheel over an unfocused pane. Horizontal scrolling and cursor columns stay
+independent. Wrap, folds and concealment are disabled in paired windows.
 
--------------------------------------------------------------------------------
-COMMAND *docpair-command*
+:only retains a complete pair. :close and :q in a pane close the pair, subject
+to native checks for unsaved changes. :q on the final pair exits Neovim.
+:tabclose and :tabonly do not recreate removed tabs. Ctrl-W T moves a paired
+view to a new tab with its partner. Deleting a paired buffer removes its views.
 
-*:Documented* [file] [infofile][!]
-    Open [file] on the left and its notes on the right.
-    Without arguments, open notes for the active buffer
+SAVING AND SESSIONS                                      *docpair-saving*
 
-    Placement:
-      - Notes live in <dir-of-{file}>/.documented/
-      - With no [infofile], the name is <basename({file})>_info
-      - With [infofile], only its *basename* is used; it is still placed
-        under the .documented/ folder.
+Opening uses loaded buffers, including unsaved edits. It never writes source
+or notes to disk. Missing trailing note lines are padded in memory. Existing
+notes become modified if padding is added; a new empty padded notebook does not
+count as a user edit. Run :Documented again after source growth to extend it.
 
-    Behavior:
-      - Creates the notes file if missing.
-      - Pads the notes file with empty lines to match the source’s line count,
-        so line N in source corresponds to line N in notes.
-      - Sets scroll & cursor synchronization between the two windows.
+:write saves the current pane; :wall saves all modified files, including hidden
+notes. Edited notes survive switching even with nohidden. :qall refuses to
+lose unsaved notes; explicit forced native commands keep their normal meaning.
+The notes directory is created on first write.
 
-    Opening:
-      - With [!], use the current tab (close other windows) before vsplitting.
-      - Without [!], open in a new tab.
+:mksession creates <session-file>.docpair.json with file associations only.
+:source of that session restores pairs and custom note paths. Unsaved contents
+are not stored in the JSON; save your work separately.
 
-    Completion:
-      - [file] supports filename completion.
+:file and :saveas retain the association with the renamed buffer. The partner's
+path stays unchanged, and no files are moved or copied. Use a session to retain
+such non-default mappings between editor runs. One notes file cannot belong to
+two sources at once, including when reopening an old source name after rename.
 
--------------------------------------------------------------------------------
-OPTIONS *docpair-options*
+LIMITATIONS                                             *docpair-notes*
 
-*docpair-info_filetype*
-    String. Filetype used for the right-hand notes buffer.
-    Default: "markdown"
->
-  require("docpair").setup({ info_filetype = "markdown" })
-<
+Line N maps to line N, not to a symbol. Inserting/deleting code can detach an
+explanation from its intended function. Padding only extends the notes length.
 
--------------------------------------------------------------------------------
-USAGE & EXAMPLES *docpair-usage*
+Both whole files stay loaded; long notes are not a scope-limited projection.
+Markdown syntax is supported, but rendered Markdown can break visual alignment.
 
-Basic:
->
-  :Documented src/main.c
-<
-Custom notes filename (still placed in .documented/):
->
-  :Documented src/main.c main_notes.md
-<
-Stay in the current tab:
->
-  :Documented! README.md
-<
-Suggested workflows:
-  - API learning: annotate each line/step while trying calls and options.
-  - Code reading: summarize intent per function or block, line-aligned.
-  - Teaching/Demos: keep exercises on the left, hints/answers on the right.
-  - Reviews: jot down questions or to-dos without touching the source.
+Neovim still has two ordinary buffers/windows. Manual rearrangement can change
+the geometry while preserving ownership. Small screens may have no room for a
+partner split. noautocmd, session managers that skip native session events and
+plugins replacing layouts may need DocumentedRepair or dedicated integration.
+Symlink aliases are not canonicalized. Only Neovim 0.12.6 is validated here.
 
--------------------------------------------------------------------------------
-NOTES & LIMITATIONS *docpair-notes*
-
-- Intentional minimalism: only line-level synchronization (scrollbind/cursorbind).
-  No structural mapping, symbols, or live parsing.
-- Padding happens when you run :Documented. If the source grows later, re-run
-  the command to extend the notes file’s line count.
-- Wrapping and folds are disabled in the notes window to keep alignment stable.
-- Notes are regular files under .documented/ — easy to version-control.
-
--------------------------------------------------------------------------------
-HELPTAGS *docpair-helptags*
-
-If this help file isn’t found by :help yet, generate helptags for your doc dir:
->
-  :helptags {path-to-your-plugin}/doc
-<
-Then:
->
-  :help docpair
-  :help :Documented
-<
+Comment projections, semantic anchors and multiple documentation providers are
+not implemented by this lifecycle fix.
 
 vim:tw=78:ts=8:ft=help:norl:
-

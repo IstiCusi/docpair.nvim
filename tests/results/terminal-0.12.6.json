@@ -1,0 +1,75 @@
+{
+  "interface": "Neovim terminal UI on a pseudo-terminal",
+  "steps": [
+    {
+      "step": "open 50,000 lines",
+      "pairs": 1,
+      "passed": true
+    },
+    {
+      "step": "jump and scroll",
+      "pairs": 1,
+      "passed": true
+    },
+    {
+      "step": "edit notes in terminal",
+      "pairs": 1,
+      "passed": true
+    },
+    {
+      "step": "edit other source",
+      "pairs": 1,
+      "passed": true
+    },
+    {
+      "step": "native tab split",
+      "pairs": 2,
+      "passed": true
+    },
+    {
+      "step": "native gt and gT",
+      "pairs": 2,
+      "passed": true
+    },
+    {
+      "step": "only retains a complete pair",
+      "pairs": 2,
+      "passed": true
+    },
+    {
+      "step": "Ctrl-W T moves a complete pair",
+      "pairs": 2,
+      "passed": true
+    },
+    {
+      "step": "tabclose keeps remaining tab",
+      "pairs": 1,
+      "passed": true
+    },
+    {
+      "step": "return to edited notes",
+      "pairs": 1,
+      "passed": true
+    },
+    {
+      "step": "save source and notes",
+      "pairs": 1,
+      "passed": true
+    },
+    {
+      "step": "tabonly",
+      "pairs": 1,
+      "passed": true
+    },
+    {
+      "step": "unfocused floating window beside final pair",
+      "pairs": 1,
+      "passed": true
+    },
+    {
+      "step": "quit final pair exits cleanly",
+      "passed": true
+    }
+  ],
+  "passed": 14
+}
