@@ -1,90 +1,138 @@
 *docpair.nvim* *docpair*                                  Last change: 2026-11-17
 
-docpair.nvim: managed source/notes window pairs. Tested with Neovim 0.12.6.
+docpair.nvim: paired source, comment projections and external notebooks.
+Requires Neovim 0.12+. Validated with 0.12.6.
 
 COMMANDS                                                *docpair-commands*
 
 :Documented[!] [file] [infofile]                          *:Documented*
-    Pair the named source or active file buffer with its notes. Source left,
-    notes right. Without ! use a new tab; ! preserves the current tab and
-    unrelated windows. Repeating on the current pair extends blank padding
-    without resetting the cursor or adding more windows.
+    Open source left, documentation right. No !: new tab; !: current window.
+    Default view is text. An explicit infofile selects the external notebook.
+    Ordinary registered source and documentation views stay paired across
+    buffer changes, splits, tabs, close/only commands and native sessions.
 
-    Notes: <source-directory>/.documented/<source-basename>_info
-    Custom infofile: use its basename in the same directory.
-    Non-writable source directory fallback:
-        ~/.config/docpair/tree<absolute-source-directory>/<notes-name>
+:DocumentedView [text|markdown|raw|notes]                 *:DocumentedView*
+    Select an enabled view, or cycle configured views if no name is given.
+    Default normal-mode key in the documentation pane: g<Tab> (g, then Tab).
+
+:DocumentedAdd                                           *:DocumentedAdd*
+    Create/open a comment associated with the code cursor and focus its view.
+    Default source mapping: <leader>dd. Syntax nodes determine safe insertion
+    when available; fallback inserts before a whole source line. Known string
+    interiors and explicit line continuations reject insertion.
+
+:DocumentedSource                                        *:DocumentedSource*
+    Reveal/hide comments in this pair. Default source mapping: <leader>ds.
+
+:DocumentedDiscard                                       *:DocumentedDiscard*
+    Explicitly discard an unapplied draft and reread the source comment.
+
+:DocumentedDrafts                                        *:DocumentedDrafts*
+    Select an unapplied draft to reopen after switching files.
 
 :DocumentedClose                                         *:DocumentedClose*
-    Close the current pair without forcing a modified buffer closed.
+    Close the current pair, subject to normal modified-buffer protection.
 
 :DocumentedDetach                                        *:DocumentedDetach*
-    Keep both windows, stop managing this view, restore saved window options.
-    Use :Documented! to attach the view again.
+    Keep panes, release this pair, restore the original window options.
+    An open comment projection still writes its source. :Documented! re-pairs.
 
 :DocumentedRepair                                        *:DocumentedRepair*
-    Reconcile registered pairs after commands that suppressed editor events.
+    Repair registered views after operations that suppressed normal events.
 
 CONFIGURATION                                           *docpair-setup*
 >
-    require('docpair').setup({ info_filetype = 'markdown' })
+    require('docpair').setup({
+      initial_view = 'text',
+      views = { 'text', 'markdown', 'raw', 'notes' },
+      mappings = {
+        cycle = 'g<Tab>',
+        create = '<leader>dd',
+        source = '<leader>ds',
+      },
+      comments = { hide = true, debounce_ms = 80 },
+      info_filetype = 'markdown',
+      on_markdown = false,
+    })
 <
-Native package loading runs setup with defaults. The only option is the notes
-filetype, default markdown. Plugin use requires no Python dependencies.
+Use the same table as lazy.nvim's opts. Mapping false disables a default key.
+The views list replaces the cycle order. initial_view must be included in it.
+initial_view='notes' retains the previous notebook-first workflow.
+on_markdown may be a function(buffer, window) for optional renderer integration.
+Markdown itself uses Neovim highlighting/concealment; no rich renderer is bundled.
 
-NAVIGATION                                              *docpair-navigation*
+VIEWS AND SAVING                                        *docpair-saving*
 
-Selecting another file within either pane updates the pair. :bnext skips notes.
-Splits and tab splits of registered files receive their own partner. Several
-pairs may exist in one tab. Tabs retain their own cursor/view positions while
-sharing buffer contents. Help, quickfix, preview and floating windows are not
-paired. Ordinary unregistered files outside a pair remain unaffected.
+text:       comment body, no language-specific wrapper.
+markdown:   same body with Markdown filetype, syntax and concealment.
+raw:        exact comment including its delimiters.
+notes:      external per-source notebook, preserving the earlier line coupling.
 
-Vertical scrolling and cursor rows follow only the partner, including the mouse
-wheel over an unfocused pane. Horizontal scrolling and cursor columns stay
-independent. Wrap, folds and concealment are disabled in paired windows.
+The complete ordinary source buffer is authoritative. No projection files are
+written. Changing view does not modify source or create a source undo entry.
+:write in a comment pane flushes pending changes and saves the entire source.
+:write in notes writes that notebook. :wall saves all modified files.
+Rename / :saveas the source, not a projection. Opening alone never writes files.
 
-:only retains a complete pair. :close and :q in a pane close the pair, subject
-to native checks for unsaved changes. :q on the final pair exits Neovim.
-:tabclose and :tabonly do not recreate removed tabs. Ctrl-W T moves a paired
-view to a new tab with its partner. Deleting a paired buffer removes its views.
+Normal u/Ctrl-R in a comment pane use source undo/redo. Continuous insertion is
+joined while no other source edit intervenes. Source-window undo stays native.
 
-SAVING AND SESSIONS                                      *docpair-saving*
+Conflicts, missing ranges and unsafe delimiters retain a modified draft instead
+of overwriting source. Repair it or explicitly :DocumentedDiscard. View changes
+are blocked until repaired. :DocumentedDrafts reopens hidden drafts. Forced quit
+commands may discard unsaved text. No crash guarantee is made for unflushed
+projection drafts; applied changes live in the ordinary source buffer.
 
-Opening uses loaded buffers, including unsaved edits. It never writes source
-or notes to disk. Missing trailing note lines are padded in memory. Existing
-notes become modified if padding is added; a new empty padded notebook does not
-count as a user edit. Run :Documented again after source growth to extend it.
+Notes path: <source-directory>/.documented/<source-basename>_info.
+A custom infofile uses only its basename. Non-writable source directories use
+~/.config/docpair/tree<absolute-source-directory>/<notes-name>.
+Notes are loaded/padded on use and written on save. Hidden edited notes take
+part in :wall and native unsaved-buffer checks.
 
-:write saves the current pane; :wall saves all modified files, including hidden
-notes. Edited notes survive switching even with nohidden. :qall refuses to
-lose unsaved notes; explicit forced native commands keep their normal meaning.
-The notes directory is created on first write.
+SCOPES AND NAVIGATION                                   *docpair-navigation*
 
-:mksession creates <session-file>.docpair.json with file associations only.
-:source of that session restores pairs and custom note paths. Unsaved contents
-are not stored in the JSON; save your work separately.
+Whole-line standalone comments are recognized by language adapters. Available
+Tree-sitter parsers supply syntax scopes. The smallest documented section wins.
+Without a parser, nearest preceding comment is the positional fallback; the
+window bar distinguishes it from syntax scope. Unknown filetypes can use notes.
+Trailing comments, recognized directives and Python docstrings remain source.
 
-:file and :saveas retain the association with the renamed buffer. The partner's
-path stays unchanged, and no files are moved or copied. Use a session to retain
-such non-default mappings between editor runs. One notes file cannot belong to
-two sources at once, including when reopening an old source name after rename.
+Comment-pane scrolling never moves the source cursor. Selecting another source
+section changes the comment view and restores that section's reading position.
+While editing documentation, its section is fixed. A D sign marks hidden docs.
 
-LIMITATIONS                                             *docpair-notes*
+Code-window concealment changes only display. Physical ranges, line numbers,
+substitutions and copy/delete operations still include comments. Reveal source
+before moving functions and their docs. The cursor skips hidden comment lines;
+reveal source to inspect exact search hits. Other windows of the same buffer
+remain visible. Comment-only files keep a visible source position.
 
-Line N maps to line N, not to a symbol. Inserting/deleting code can detach an
-explanation from its intended function. Padding only extends the notes length.
+Each source view has its own paired documentation window. Several pairs may
+exist in one tab, or show the same source in different tabs and modes. Native
+splits, tab splits, buffer switches, :only and Ctrl-W T keep pairs intact.
+:close/:q close a pair; :tabclose/:tabonly do not resurrect removed tabs.
+Deleting a paired buffer removes its pair. Unrelated/help/quickfix/float windows
+remain independent. Symlink aliases are not canonicalized.
 
-Both whole files stay loaded; long notes are not a scope-limited projection.
-Markdown syntax is supported, but rendered Markdown can break visual alignment.
+SESSIONS                                                *docpair-sessions*
 
-Neovim still has two ordinary buffers/windows. Manual rearrangement can change
-the geometry while preserving ownership. Small screens may have no room for a
-partner split. noautocmd, session managers that skip native session events and
-plugins replacing layouts may need DocumentedRepair or dedicated integration.
-Symlink aliases are not canonicalized. Only Neovim 0.12.6 is validated here.
+:mksession writes a <session>.docpair.json companion with associations, modes
+and positions, not content backups. :source restores the native session and
+its comment views. Save files first. An invalid draft blocks restoration.
 
-Comment projections, semantic anchors and multiple documentation providers are
-not implemented by this lifecycle fix.
+LIMITS                                                  *docpair-notes*
+
+Fallback scope association is positional, not semantic. Install a Tree-sitter
+parser for the source language. Lexer adapters cannot cover every dialect or
+embedded language. XML/Javadoc/reStructuredText are preserved, not converted.
+Python docstrings are strings, not projected comments in this version.
+
+External notebooks retain line-number alignment, so edits to source can make
+old note positions drift. Markdown comment views have no line-alignment limit.
+
+These are normal Neovim windows coordinated by the plugin. Small screens may
+prevent splits. noautocmd, session tools omitting native events, or plugins
+replacing the layout may need :DocumentedRepair or a dedicated integration.
+Hiding uses Neovim 0.12's window-scoped namespace API; 0.12.6 is tested.
 
 vim:tw=78:ts=8:ft=help:norl:

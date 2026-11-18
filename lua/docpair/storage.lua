@@ -1,6 +1,6 @@
 -- A record associates actual files, independently of tabs and window IDs.
 -- bufload() reuses loaded buffers, preserving unsaved text and undo history.
-local M = { sources = {}, notes = {} }
+local M = { sources = {}, notes = {}, views = {} }
 local api = vim.api
 
 function M.path(path)
@@ -14,12 +14,13 @@ end
 
 function M.find(buffer)
   if not api.nvim_buf_is_valid(buffer) then return nil end
+  if M.views[buffer] then return M.views[buffer] end
   local path = api.nvim_buf_get_name(buffer)
   return M.sources[path] or M.notes[path]
 end
 
 function M.is_notes(buffer)
-  return api.nvim_buf_is_valid(buffer) and M.notes[api.nvim_buf_get_name(buffer)] ~= nil
+  return api.nvim_buf_is_valid(buffer) and (M.views[buffer] ~= nil or M.notes[api.nvim_buf_get_name(buffer)] ~= nil)
 end
 
 local function notes_directory(source)
@@ -61,10 +62,11 @@ function M.buffer(path)
   return buffer
 end
 
-function M.prepare(record, filetype, extend_padding)
+function M.prepare(record, filetype, extend_padding, notes_enabled)
   record.source_buffer = M.buffer(record.source)
-  record.notes_buffer = M.buffer(record.notes)
   vim.bo[record.source_buffer].buflisted = true
+  if notes_enabled == false then return record end
+  record.notes_buffer = M.buffer(record.notes)
   local notes_buffer = record.notes_buffer
   if vim.bo[notes_buffer].filetype ~= filetype then vim.bo[notes_buffer].filetype = filetype end
   -- :bnext should select source files, not auxiliary notebooks. Hidden edited
@@ -91,7 +93,7 @@ function M.prepare(record, filetype, extend_padding)
 end
 
 function M.reset()
-  M.sources, M.notes = {}, {}
+  M.sources, M.notes, M.views = {}, {}, {}
 end
 
 function M.rename(buffer)

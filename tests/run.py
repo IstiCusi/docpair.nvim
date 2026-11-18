@@ -66,7 +66,7 @@ def boot():
         table.insert(_G.docpair_messages, {text=tostring(text), level=level or 2})
       end
       vim.opt.rtp:append(...)
-      require('docpair').setup({})
+      require('docpair').setup({ initial_view = 'notes', comments = { hide = false } })
     ''', str(REPO))
     return n
 
@@ -432,7 +432,7 @@ class Integration(unittest.TestCase):
         finally:directory.chmod(0o755)
 
     def test_native_loader_respects_explicit_setup(self):
-        self.n.exec_lua('require("docpair").setup({info_filetype="text"})')
+        self.n.exec_lua('require("docpair").setup({info_filetype="text",initial_view="notes",comments={hide=false}})')
         self.command('runtime plugin/docpair.lua');p=self.open()
         self.assertEqual(self.n.buffers[p['notes_buffer']].options['filetype'],'text');self.assert_pairs(1)
 

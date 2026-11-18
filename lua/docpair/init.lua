@@ -3,11 +3,12 @@
 local M = {}
 
 function M.setup(options)
+  assert(vim.fn.has("nvim-0.12") == 1, "docpair comment views require Neovim 0.12 or newer")
   -- Explicit setup in init.lua must not be replaced by the native plugin
   -- loader's defaults later in startup.
   vim.g.loaded_docpair = true
   local manager = require("docpair.manager")
-  manager.setup(vim.tbl_extend("force", { info_filetype = "markdown" }, options or {}))
+  manager.setup(require("docpair.config").resolve(options))
   vim.api.nvim_create_user_command("Documented", function(command)
     local ok, message = pcall(manager.open, command.fargs, command.bang)
     if not ok then vim.notify("docpair: " .. tostring(message), vim.log.levels.ERROR) end
@@ -19,6 +20,25 @@ function M.setup(options)
     { desc = "Release this pair without closing its windows", force = true })
   vim.api.nvim_create_user_command("DocumentedRepair", manager.reconcile,
     { desc = "Repair pairs after commands that suppressed events", force = true })
+  vim.api.nvim_create_user_command("DocumentedView", function(command)
+    manager.change_view(command.args ~= "" and command.args or nil)
+  end, { nargs = "?", force = true, complete = function() return { "text", "markdown", "raw", "notes" } end,
+    desc = "Cycle documentation views, or select a view by name" })
+  vim.api.nvim_create_user_command("DocumentedAdd", manager.add_comment,
+    { force = true, desc = "Create or open documentation at the source cursor" })
+  vim.api.nvim_create_user_command("DocumentedSource", manager.toggle_source,
+    { force = true, desc = "Show or hide comments in this source view" })
+  vim.api.nvim_create_user_command("DocumentedDiscard", manager.discard_draft,
+    { force = true, desc = "Discard an unapplied draft and reread the source comment" })
+  vim.api.nvim_create_user_command("DocumentedDrafts", function()
+    local drafts = require("docpair.views").drafts()
+    if #drafts == 0 then vim.notify("docpair: no unapplied drafts"); return end
+    vim.ui.select(drafts, { prompt = "Open unapplied draft", format_item = function(state)
+      return state.record.source .. " — " .. (state.error or "pending edit")
+    end }, function(state)
+      if state then vim.cmd("tab sbuffer " .. state.buffer) end
+    end)
+  end, { force = true, desc = "Recover an unapplied draft after changing files" })
 end
 
 function M.inspect()

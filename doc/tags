@@ -1,11 +1,17 @@
 :Documented	docpair.txt	/*:Documented*
+:DocumentedAdd	docpair.txt	/*:DocumentedAdd*
 :DocumentedClose	docpair.txt	/*:DocumentedClose*
 :DocumentedDetach	docpair.txt	/*:DocumentedDetach*
+:DocumentedDiscard	docpair.txt	/*:DocumentedDiscard*
+:DocumentedDrafts	docpair.txt	/*:DocumentedDrafts*
 :DocumentedRepair	docpair.txt	/*:DocumentedRepair*
+:DocumentedSource	docpair.txt	/*:DocumentedSource*
+:DocumentedView	docpair.txt	/*:DocumentedView*
 docpair	docpair.txt	/*docpair*
 docpair-commands	docpair.txt	/*docpair-commands*
 docpair-navigation	docpair.txt	/*docpair-navigation*
 docpair-notes	docpair.txt	/*docpair-notes*
 docpair-saving	docpair.txt	/*docpair-saving*
+docpair-sessions	docpair.txt	/*docpair-sessions*
 docpair-setup	docpair.txt	/*docpair-setup*
 docpair.nvim	docpair.txt	/*docpair.nvim*

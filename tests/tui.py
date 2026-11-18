@@ -31,7 +31,7 @@ with tempfile.TemporaryDirectory(prefix='docpair-tui-') as directory:
     init.write_text('vim.opt.rtp:append('+json.dumps(str(repo))+')\n'
                     'vim.opt.number=true\nvim.opt.mouse="a"\n'
                     'vim.opt.hidden=true\nvim.opt.swapfile=false\n'
-                    'vim.opt.shortmess:append("I")\nrequire("docpair").setup({})\n'
+                    'vim.opt.shortmess:append("I")\nrequire("docpair").setup({ initial_view = "notes", comments = { hide = false } })\n'
                     'function DocpairSnapshot()\n'
                     'local state={pairs=require("docpair").inspect(),current=vim.api.nvim_get_current_win()}\n'
                     'for _,p in ipairs(state.pairs) do\n'

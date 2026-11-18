@@ -4,12 +4,19 @@
 local M = {}
 local api = vim.api
 local storage = require("docpair.storage")
+local views = require("docpair.views")
 local pairs_by_id, owner_by_window, ignored_windows = {}, {}, {}
 local next_pair_id, busy, pending, exiting, syncing = 0, false, false, false, false
 local config = { info_filetype = "markdown" }
 local reconcile
+local session_restoring = false
+local recent_pair
 local window_options = { "wrap", "linebreak", "foldenable", "conceallevel", "scrolloff",
-  "sidescrolloff", "scrollbind", "cursorbind" }
+  "sidescrolloff", "scrollbind", "cursorbind", "concealcursor", "winbar" }
+
+local function prepare(record, extend, mode)
+  return storage.prepare(record, config.info_filetype, extend, (mode or config.initial_view) == "notes")
+end
 
 local function valid(window)
   return window and api.nvim_win_is_valid(window)
@@ -53,6 +60,7 @@ end
 
 local function sync_pair(pair, origin)
   if syncing or not valid(pair.source_window) or not valid(pair.notes_window) then return end
+  if views.follow(pair, origin) then return end
   local target = origin == pair.source_window and pair.notes_window or pair.source_window
   if not valid(origin) then return end
   syncing = true
@@ -72,7 +80,8 @@ local function sync_pair(pair, origin)
   if not ok then vim.notify("docpair synchronization: " .. tostring(message), vim.log.levels.WARN) end
 end
 
-local function bind(pair, source_window, notes_window, record)
+local function bind(pair, source_window, notes_window, record, inherited)
+  pair.record_before = pair.record
   pair.source_window, pair.notes_window, pair.record = source_window, notes_window, record
   pair.source_options = pair.source_options or read_options(source_window)
   pair.notes_options = pair.notes_options or read_options(notes_window)
@@ -81,10 +90,11 @@ local function bind(pair, source_window, notes_window, record)
   configure_window(source_window)
   configure_window(notes_window)
   api.nvim_win_set_buf(source_window, record.source_buffer)
-  api.nvim_win_set_buf(notes_window, record.notes_buffer)
+  views.bind(pair, record, inherited)
 end
 
 local function forget(pair)
+  views.release(pair)
   owner_by_window[pair.source_window], owner_by_window[pair.notes_window] = nil, nil
   restore_options(pair.source_window, pair.source_options)
   restore_options(pair.notes_window, pair.notes_options)
@@ -102,14 +112,16 @@ local function split_partner(window, buffer, direction)
   end)
 end
 
-local function new_pair(source_window, notes_window, record)
-  storage.prepare(record, config.info_filetype)
+local function new_pair(source_window, notes_window, record, mode)
+  local inherited = notes_window and views.inherit(api.nvim_win_get_buf(notes_window))
+  if not mode and not inherited and recent_pair and recent_pair.record == record then mode = recent_pair.mode end
+  prepare(record, false, mode or (inherited and inherited.mode))
   if not source_window then source_window = split_partner(notes_window, record.source_buffer, "leftabove") end
-  if not notes_window then notes_window = split_partner(source_window, record.notes_buffer, "rightbelow") end
+  if not notes_window then notes_window = split_partner(source_window, record.notes_buffer or record.source_buffer, "rightbelow") end
   next_pair_id = next_pair_id + 1
-  local pair = { id = next_pair_id, record = record }
+  local pair = { id = next_pair_id, record = record, mode = mode }
   pairs_by_id[pair.id] = pair
-  bind(pair, source_window, notes_window, record)
+  bind(pair, source_window, notes_window, record, inherited)
   sync_pair(pair, source_window)
   return pair
 end
@@ -172,7 +184,7 @@ reconcile = function()
       local record = pair.record
       forget(pair)
       if window_record(survivor) == record then
-        new_pair(source_valid and survivor or nil, notes_valid and survivor or nil, record)
+        new_pair(source_valid and survivor or nil, notes_valid and survivor or nil, record, pair.mode)
       end
     elseif api.nvim_win_get_tabpage(pair.source_window) ~= api.nvim_win_get_tabpage(pair.notes_window) then
       forget(pair)
@@ -181,7 +193,7 @@ reconcile = function()
       local source_buffer = api.nvim_win_get_buf(pair.source_window)
       local notes_buffer = api.nvim_win_get_buf(pair.notes_window)
       local source_changed = source_buffer ~= pair.record.source_buffer
-      local notes_changed = notes_buffer ~= pair.record.notes_buffer
+      local notes_changed = notes_buffer ~= pair.doc_buffer
       if source_changed or notes_changed then
         local changed = notes_changed and pair.notes_window or pair.source_window
         if source_changed and notes_changed then
@@ -189,9 +201,9 @@ reconcile = function()
           changed = current == pair.notes_window and current or pair.source_window
         end
         local replacement = api.nvim_win_get_buf(changed)
-        if storage.regular(replacement) then
+        if storage.regular(replacement) or storage.find(replacement) then
           local record = storage.find(replacement) or storage.for_source(replacement)
-          storage.prepare(record, config.info_filetype)
+          prepare(record, false, pair.mode)
           bind(pair, pair.source_window, pair.notes_window, record)
           -- A source selected in the notes pane still belongs on the source
           -- side. Known notes are never recursively documented as source.
@@ -247,6 +259,7 @@ function M.reconcile()
   if busy or suspend() then return end
   busy = true
   local ok, message = xpcall(reconcile, debug.traceback)
+  if ok then views.cleanup() end
   busy = false
   if not ok then vim.notify("docpair: " .. message, vim.log.levels.ERROR) end
 end
@@ -254,10 +267,11 @@ end
 function M.open(arguments, use_current_tab)
   assert(#arguments <= 2, "Usage: :Documented[!] [file] [infofile]")
   local buffer = #arguments > 0 and storage.buffer(storage.path(arguments[1])) or api.nvim_get_current_buf()
-  assert(storage.regular(buffer), "Documented requires a named, ordinary file buffer")
+  assert(storage.regular(buffer) or storage.find(buffer), "Documented requires a named, ordinary file buffer")
   local record = storage.find(buffer) or storage.for_source(buffer, arguments[2])
   if arguments[2] then record = storage.for_source(buffer, arguments[2]) end
-  storage.prepare(record, config.info_filetype, true)
+  local mode = arguments[2] and "notes" or config.initial_view
+  prepare(record, true, mode)
   local active = owner_by_window[api.nvim_get_current_win()]
   if active and pairs_by_id[active].record == record then M.reconcile(); return end
   busy = true
@@ -272,7 +286,7 @@ function M.open(arguments, use_current_tab)
       api.nvim_set_current_win(pair.source_window)
     else
       api.nvim_win_set_buf(source_window, record.source_buffer)
-      new_pair(source_window, nil, record)
+      new_pair(source_window, nil, record, mode)
     end
   end, debug.traceback)
   busy = false
@@ -301,7 +315,8 @@ function M.inspect()
   for _, pair in pairs(pairs_by_id) do
     output[#output + 1] = { id = pair.id, source_window = pair.source_window, notes_window = pair.notes_window,
       source = pair.record.source, notes = pair.record.notes,
-      source_buffer = pair.record.source_buffer, notes_buffer = pair.record.notes_buffer }
+      source_buffer = pair.record.source_buffer, notes_buffer = pair.record.notes_buffer,
+      doc_buffer = pair.doc_buffer, view = pair.mode, comment_id = pair.current_comment }
   end
   table.sort(output, function(left, right) return left.id < right.id end)
   return output
@@ -314,12 +329,15 @@ local function save_session()
   for _, record in pairs(storage.sources) do records[#records + 1] = { source = record.source, notes = record.notes } end
   -- Native sessions retain their usual format. JSON stores only associations
   -- (including custom note filenames), never source text or private notes.
-  local ok, message = pcall(vim.fn.writefile, { vim.json.encode({ version = 1, records = records }) },
+  local ok, message = pcall(vim.fn.writefile, { vim.json.encode({ version = 1, records = records, views = views.session() }) },
     filename .. ".docpair.json")
   if not ok then vim.notify("docpair session: " .. tostring(message), vim.log.levels.ERROR) end
 end
 
 local function load_session()
+  -- :mksession uses :doautoall SessionLoadPost: it fires once per buffer.
+  -- Rebuilding projection identities repeatedly would orphan the first set.
+  if session_restoring then return end
   local filename = vim.v.this_session .. ".docpair.json"
   if vim.fn.filereadable(filename) == 0 then schedule(); return end
   local ok, data = pcall(function() return vim.json.decode(table.concat(vim.fn.readfile(filename), "\n")) end)
@@ -327,6 +345,7 @@ local function load_session()
     vim.notify("docpair: invalid session metadata: " .. filename, vim.log.levels.WARN)
     return
   end
+  session_restoring = true
   for _, pair in ipairs(vim.tbl_values(pairs_by_id)) do forget(pair) end
   ignored_windows = {}
   storage.reset()
@@ -336,15 +355,22 @@ local function load_session()
       if not registered then vim.notify("docpair: " .. tostring(message), vim.log.levels.WARN) end
     end
   end
+  views.restore_session(data.views)
   -- SessionLoadPost runs while g:SessionLoad is still 1. Wait until :source
   -- has returned before inspecting windows; schedule() would discard this
   -- request during the native session's restoration guard.
-  vim.schedule(schedule)
+  vim.schedule(function() session_restoring = false; schedule() end)
 end
 
 function M.setup(options)
   config = options
+  views.setup(config, { cycle = function() M.change_view() end, create = function() M.add_comment() end,
+    source = function() M.toggle_source() end })
   local group = api.nvim_create_augroup("DocpairLifecycle", { clear = true })
+  api.nvim_create_autocmd("WinLeave", { group = group, callback = function()
+    local pair = pairs_by_id[owner_by_window[api.nvim_get_current_win()]]
+    if pair then recent_pair = { record = pair.record, mode = pair.mode } end
+  end })
   api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "WinEnter", "WinNew", "TabEnter", "TabClosed", "BufDelete" },
     { group = group, callback = schedule })
   api.nvim_create_autocmd("WinClosed", { group = group, callback = function(event)
@@ -366,7 +392,7 @@ function M.setup(options)
   api.nvim_create_autocmd("BufDelete", { group = group, callback = function(event)
     if busy or suspend() then return end
     for _, pair in pairs(pairs_by_id) do
-      if pair.record.source_buffer == event.buf or pair.record.notes_buffer == event.buf then
+      if pair.record.source_buffer == event.buf or pair.record.notes_buffer == event.buf or pair.doc_buffer == event.buf then
         pair.close_requested = true
       end
     end
@@ -406,10 +432,35 @@ function M.setup(options)
     schedule()
   end })
   api.nvim_create_autocmd("SessionWritePost", { group = group, callback = save_session })
+  api.nvim_create_autocmd("SourcePre", { group = group, callback = function(event)
+    if vim.fn.filereadable(event.file .. ".docpair.json") == 0 then return end
+    busy = true
+    local ok, message = pcall(function()
+      views.before_session()
+      for _, pair in ipairs(vim.tbl_values(pairs_by_id)) do forget(pair) end
+    end)
+    busy = false
+    if not ok then error(message) end
+  end })
   api.nvim_create_autocmd("SessionLoadPost", { group = group, callback = load_session })
   -- ExitPre may occur even when :qall is cancelled. Only committed shutdown
   -- sets this flag; normal events must keep working after a cancelled quit.
   api.nvim_create_autocmd("VimLeavePre", { group = group, callback = function() exiting = true end })
 end
+
+local function current_action(action, ...)
+  local pair = pairs_by_id[owner_by_window[api.nvim_get_current_win()]]
+  if not pair then vim.notify("docpair: open :Documented first", vim.log.levels.WARN); return end
+  busy = true
+  local ok, message = pcall(action, pair, ...)
+  busy = false
+  if not ok then vim.notify("docpair: " .. tostring(message), vim.log.levels.ERROR) end
+  schedule()
+end
+
+function M.change_view(name) current_action(views.change, name) end
+function M.add_comment() current_action(views.create) end
+function M.toggle_source() current_action(views.toggle_source) end
+function M.discard_draft() current_action(views.discard) end
 
 return M
