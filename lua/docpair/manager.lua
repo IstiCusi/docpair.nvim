@@ -60,6 +60,10 @@ end
 
 local function sync_pair(pair, origin)
   if syncing or not valid(pair.source_window) or not valid(pair.notes_window) then return end
+  -- Cursor/scroll events may arrive before the scheduled buffer reconciliation.
+  -- Never apply the old source's comment positions to a newly selected buffer.
+  if api.nvim_win_get_buf(pair.source_window) ~= pair.record.source_buffer
+    or api.nvim_win_get_buf(pair.notes_window) ~= pair.doc_buffer then return end
   if views.follow(pair, origin) then return end
   local target = origin == pair.source_window and pair.notes_window or pair.source_window
   if not valid(origin) then return end

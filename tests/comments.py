@@ -109,6 +109,29 @@ class Comments(unittest.TestCase):
         self.assertEqual(self.doc(),[''])
         self.assertFalse(self.n.current.buffer.options['modified'])
 
+    def test_cursor_event_before_buffer_reconciliation(self):
+        if not self.can_hide():
+            self.skipTest('requires source comment concealment')
+        pair = self.open()
+        short = self.root / 'short.c'
+        short.write_text('/// Short documentation\nint short_value;\n')
+        buffer = self.n.funcs.bufadd(str(short))
+        self.n.funcs.bufload(buffer)
+        # Native buffer changes can deliver CursorMoved before the scheduled
+        # pair rebuild. The old comment ends beyond the new buffer's last line.
+        self.n.exec_lua('''
+          local window, buffer = ...
+          vim.v.errmsg = ''
+          vim.api.nvim_win_set_buf(window, buffer)
+          vim.api.nvim_exec_autocmds('CursorMoved', { buffer = buffer })
+        ''', pair['source_window'], buffer)
+        self.assertEqual(self.n.vvars['errmsg'], '')
+        self.settle()
+        self.assertEqual(self.pair()['source'], str(short))
+        self.assertEqual(self.doc(), ['Short documentation'])
+        self.assertLessEqual(self.n.current.window.cursor[0], 2)
+        self.check_pairs(1)
+
     def test_default_mapping_cycles_only_document(self):
         p=self.open()
         self.assertEqual(self.n.exec_lua('return vim.fn.maparg("g<Tab>","n")'),'')

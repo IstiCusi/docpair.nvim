@@ -6,6 +6,8 @@ neighboring pane shows the comment associated with the code cursor. Each pane
 has an independent cursor and scroll position. Existing `.documented` notebooks
 remain available as another view.
 
+![docpair.nvim – line-synchronous sidecar notes](./pic.png)
+
 Requires Neovim **0.10+**; tested on **0.10.4, 0.11.5 and 0.12.6**.
 Hiding whole comment lines requires **0.11+**. On 0.10 the editable document
 views still work, while comments remain visible in the source pane. No runtime
