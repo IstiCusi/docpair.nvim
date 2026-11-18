@@ -61,6 +61,7 @@ class Comments(unittest.TestCase):
         self.temp.cleanup()
 
     def settle(self): self.n.exec_lua('vim.wait(100);vim.cmd("redraw")')
+    def can_hide(self): return self.n.exec_lua('return require("docpair.compat").capabilities().hide_comments')
     def cmd(self, cmd): self.n.command(cmd); self.settle()
     def keys(self, keys): self.n.input(keys); self.settle()
     def pairs(self): return self.n.exec_lua('return require("docpair").inspect()')
@@ -295,10 +296,11 @@ class Comments(unittest.TestCase):
     def test_toggle_source_does_not_modify(self):
         p=self.open();self.cmd('DocumentedSource')
         self.assertEqual(self.n.api.get_option_value('conceallevel',{'win':p['source_window']}),0)
-        self.cmd('DocumentedSource');self.assertEqual(self.n.api.get_option_value('conceallevel',{'win':p['source_window']}),2)
+        self.cmd('DocumentedSource');self.assertEqual(self.n.api.get_option_value('conceallevel',{'win':p['source_window']}),2 if self.can_hide() else 0)
         self.assertFalse(self.n.buffers[p['source_buffer']].options['modified'])
 
     def test_screen_lines_hidden_without_blanks_and_cursor_visible(self):
+        if not self.can_hide():self.skipTest('Whole-line hiding requires Neovim 0.11')
         p=self.open()
         screen=self.n.exec_lua('local r={};for i=1,8 do local s="";for j=1,70 do s=s..vim.fn.screenstring(i,j) end;r[#r+1]=s end;return r')
         self.assertIn('int first(void)',screen[0])
@@ -309,6 +311,7 @@ class Comments(unittest.TestCase):
         self.assertIn('/**',self.n.exec_lua('local s="";for j=1,70 do s=s..vim.fn.screenstring(1,j) end;return s'))
 
     def test_ordinary_float_same_source_not_concealed(self):
+        if not self.can_hide():self.skipTest('Window-scoped hiding requires Neovim 0.11')
         p=self.open()
         self.n.exec_lua('local p=...;_G.float=vim.api.nvim_open_win(p.source_buffer,false,{relative="editor",row=2,col=10,width=50,height=10});vim.wo[_G.float].conceallevel=2',p)
         self.settle()
@@ -463,7 +466,7 @@ class Comments(unittest.TestCase):
         start=time.perf_counter();p=self.open();elapsed=time.perf_counter()-start
         self.assertEqual(len(self.doc()),50000)
         self.focus(p,'notes');self.keys('Gzt')
-        self.assertEqual(self.n.api.win_get_cursor(p['source_window'])[0],50003)
+        self.assertEqual(self.n.api.win_get_cursor(p['source_window'])[0],50003 if self.can_hide() else 1)
         self.assertEqual(self.n.api.win_get_cursor(p['notes_window'])[0],50000)
         start=time.perf_counter();self.cmd('DocumentedView raw');self.cmd('DocumentedView text')
         switch_seconds=time.perf_counter()-start
@@ -481,6 +484,7 @@ if __name__=='__main__':
     start=time.perf_counter()
     result=unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(Comments))
     report={'tests':result.testsRun,'failures':[(str(t),e) for t,e in result.failures],
-            'errors':[(str(t),e) for t,e in result.errors], 'seconds':time.perf_counter()-start,'timings':TIMINGS}
+            'errors':[(str(t),e) for t,e in result.errors], 'skipped':[(str(t),reason) for t,reason in result.skipped],
+            'seconds':time.perf_counter()-start,'timings':TIMINGS}
     if args.output:Path(args.output).write_text(json.dumps(report,indent=2))
     print(json.dumps(report,indent=2));raise SystemExit(not result.wasSuccessful())

@@ -1,0 +1,19 @@
+{
+  "tests": 54,
+  "failures": [],
+  "errors": [],
+  "seconds": 44.08657681600016,
+  "timings": [
+    {
+      "case": "250003 lines, 50000 doc lines",
+      "open_seconds": 5.117478305000986,
+      "two_view_switches_seconds": 0.3734546859996044,
+      "source_bytes": 28127818,
+      "document_edit_seconds": 0.4283496179996291
+    },
+    {
+      "case": "80000 lines, 20000 comments",
+      "open_and_jump_seconds": 0.8461530610002228
+    }
+  ]
+}

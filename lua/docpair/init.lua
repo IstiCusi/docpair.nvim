@@ -3,12 +3,21 @@
 local M = {}
 
 function M.setup(options)
-  assert(vim.fn.has("nvim-0.12") == 1, "docpair comment views require Neovim 0.12 or newer")
   -- Explicit setup in init.lua must not be replaced by the native plugin
   -- loader's defaults later in startup.
   vim.g.loaded_docpair = true
+  local compat = require("docpair.compat")
+  if not compat.capabilities().supported then
+    -- An unsupported editor must not turn sourcing the entire user's config
+    -- into an E5113 stack trace. Explain the minimum when the command is used.
+    vim.api.nvim_create_user_command("Documented", function()
+      vim.notify("docpair requires Neovim 0.10+; hiding source comments requires 0.11+. "
+        .. "Use :version and :echo v:progpath to check the running editor.", vim.log.levels.WARN)
+    end, { nargs = "*", bang = true, force = true })
+    return false
+  end
   local manager = require("docpair.manager")
-  manager.setup(require("docpair.config").resolve(options))
+  manager.setup(compat.configure(require("docpair.config").resolve(options)))
   vim.api.nvim_create_user_command("Documented", function(command)
     local ok, message = pcall(manager.open, command.fargs, command.bang)
     if not ok then vim.notify("docpair: " .. tostring(message), vim.log.levels.ERROR) end
@@ -39,6 +48,7 @@ function M.setup(options)
       if state then vim.cmd("tab sbuffer " .. state.buffer) end
     end)
   end, { force = true, desc = "Recover an unapplied draft after changing files" })
+  return true
 end
 
 function M.inspect()

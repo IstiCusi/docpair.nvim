@@ -1,0 +1,70 @@
+{
+  "interface": "real terminal with filetype plugins and syntax highlighting",
+  "passed": 16,
+  "steps": [
+    {
+      "step": "open 51,005 source lines with 1,000-line comment",
+      "passed": true
+    },
+    {
+      "step": "scroll documentation independently",
+      "passed": true
+    },
+    {
+      "step": "edit comment in text view",
+      "passed": true
+    },
+    {
+      "step": "g<Tab> selects Markdown",
+      "passed": true
+    },
+    {
+      "step": "g<Tab> selects original comment",
+      "passed": true
+    },
+    {
+      "step": "g<Tab> selects external notes",
+      "passed": true
+    },
+    {
+      "step": "g<Tab> returns to source comment",
+      "passed": true
+    },
+    {
+      "step": "source cursor selects second function",
+      "passed": true
+    },
+    {
+      "step": "write from projection saves ordinary C file",
+      "passed": true
+    },
+    {
+      "step": "tab split preserves second section",
+      "passed": true
+    },
+    {
+      "step": "second tab chooses its own Markdown view",
+      "passed": true
+    },
+    {
+      "step": "original tab retains text view",
+      "passed": true
+    },
+    {
+      "step": "only keeps complete pair",
+      "passed": true
+    },
+    {
+      "step": "save comments and external notes",
+      "passed": true
+    },
+    {
+      "step": "tabonly retains one pair",
+      "passed": true
+    },
+    {
+      "step": "quit last pair cleanly",
+      "passed": true
+    }
+  ]
+}

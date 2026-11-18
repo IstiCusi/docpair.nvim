@@ -6,7 +6,15 @@ neighboring pane shows the comment associated with the code cursor. Each pane
 has an independent cursor and scroll position. Existing `.documented` notebooks
 remain available as another view.
 
-Requires Neovim **0.12+**; tested on **0.12.6**. No runtime Python dependency.
+Requires Neovim **0.10+**; tested on **0.10.4, 0.11.5 and 0.12.6**.
+Hiding whole comment lines requires **0.11+**. On 0.10 the editable document
+views still work, while comments remain visible in the source pane. No runtime
+Python dependency.
+
+Run `:checkhealth docpair` to see the version, executable and available features
+of the **running editor**. `:version` and `:echo v:progpath` also identify it.
+On versions older than 0.10 the plugin stays disabled without aborting startup;
+`:Documented` explains the minimum version.
 
 ## Install with lazy.nvim
 
@@ -163,7 +171,7 @@ Session metadata contains associations, view names and positions, not content
 backups. Save source and notebooks before restoring a session. Invalid drafts
 block restoration. Tools that suppress native editor events or replace layouts
 may need `:DocumentedRepair`; compatibility with every plugin is not claimed.
-Window-scoped hiding currently uses Neovim 0.12's namespace scoping API.
+Window-scoped hiding uses the namespace scoping API available since Neovim 0.11.
 
 ## Commands
 
@@ -185,6 +193,7 @@ python tests/run.py --nvim /path/to/nvim
 python tests/comments.py --nvim /path/to/nvim
 python tests/tui.py --nvim /path/to/nvim
 python tests/comments_tui.py --nvim /path/to/nvim
+python tests/startup.py --nvim /path/to/nvim
 ```
 
 These launch real Neovim processes. The two TUI tests type keys into real

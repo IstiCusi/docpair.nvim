@@ -1,28 +1,28 @@
 {
-  "neovim": "/workspace/scratch/4e8e994a459c/toolchain/nvim-linux-x86_64/bin/nvim",
+  "neovim": "/workspace/scratch/4e8e994a459c/toolchain/0.12.6/nvim-linux-x86_64/bin/nvim",
   "tests": 54,
   "failures": [],
   "errors": [],
-  "seconds": 8.017489489000582,
+  "seconds": 8.592709393000405,
   "timings": [
     {
       "case": "200k_open_seconds",
-      "value": 0.11843850599689176
+      "value": 0.1518486290005967
     },
     {
       "case": "25_large_switches_including_ui_settle_seconds",
-      "value": 0.9797780160006369
+      "value": 1.0629360740022094
     },
     {
       "case": "large_process_memory",
       "value": [
-        "VmHWM:\t   50740 kB",
-        "VmRSS:\t   50740 kB"
+        "VmHWM:\t   50908 kB",
+        "VmRSS:\t   50908 kB"
       ]
     },
     {
       "case": "200k_syntax_open_and_navigation_seconds",
-      "value": 2.175009503000183
+      "value": 2.1648970799978997
     }
   ],
   "fixture_sizes": {

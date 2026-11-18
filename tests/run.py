@@ -343,7 +343,9 @@ class Integration(unittest.TestCase):
     def test_cancelled_qall_continues_tracking(self):
         p=self.open();self.focus(p,'notes');self.keys('iDo not lose\x1b')
         self.focus(p);self.command('edit '+str(B))
-        with self.assertRaises(pynvim.api.common.NvimError):self.n.command('qall')
+        # Older Neovim versions show a hit-enter prompt for this error when a
+        # UI is attached. Suppress the prompt, not the error or safety check.
+        with self.assertRaises(pynvim.api.common.NvimError):self.n.command('silent qall')
         self.command('edit '+str(A));self.assert_pairs(1)
         self.assertTrue(self.n.buffers[p['notes_buffer']][0].startswith('Do not lose'))
 

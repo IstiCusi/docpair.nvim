@@ -259,7 +259,7 @@ function M.hide_source(buffer)
   if not ns then ns = api.nvim_create_namespace("docpair-hidden-" .. buffer); conceal[buffer] = ns end
   api.nvim_buf_clear_namespace(buffer, ns, 0, -1)
   if #windows == 0 then return end
-  -- Stable 0.12 supports window-scoped namespaces. Unlike global buffer
+  -- Neovim 0.11 supports window-scoped namespaces. Unlike global buffer
   -- concealment, this leaves ordinary/preview windows of this file untouched.
   api.nvim__ns_set(ns, { wins = windows })
   for _, item in ipairs(comments.index(buffer).items) do
@@ -444,6 +444,10 @@ function M.create(pair)
 end
 
 function M.toggle_source(pair)
+  if not config.capabilities.hide_comments then
+    vim.notify("docpair: source comments remain visible on Neovim 0.10; hiding requires 0.11+.", vim.log.levels.INFO)
+    return
+  end
   pair.show_source = not pair.show_source
   vim.wo[pair.source_window].conceallevel = pair.show_source and 0 or 2
   M.hide_source(pair.record.source_buffer)

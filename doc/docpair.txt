@@ -1,7 +1,9 @@
-*docpair.nvim* *docpair*                                  Last change: 2026-11-17
+*docpair.nvim* *docpair*                                  Last change: 2026-11-18
 
 docpair.nvim: paired source, comment projections and external notebooks.
-Requires Neovim 0.12+. Validated with 0.12.6.
+Requires Neovim 0.10+. Validated with 0.10.4, 0.11.5 and 0.12.6.
+Whole-line hiding requires 0.11+. On 0.10 source comments remain visible.
+:checkhealth docpair reports the running version, executable and features.
 
 COMMANDS                                                *docpair-commands*
 
@@ -133,6 +135,8 @@ old note positions drift. Markdown comment views have no line-alignment limit.
 These are normal Neovim windows coordinated by the plugin. Small screens may
 prevent splits. noautocmd, session tools omitting native events, or plugins
 replacing the layout may need :DocumentedRepair or a dedicated integration.
-Hiding uses Neovim 0.12's window-scoped namespace API; 0.12.6 is tested.
+Hiding uses Neovim 0.11's window-scoped namespace API. Older editors keep
+source comments visible. Below 0.10 the plugin stays disabled at startup;
+:Documented explains the minimum. Check :version and :echo v:progpath.
 
 vim:tw=78:ts=8:ft=help:norl:

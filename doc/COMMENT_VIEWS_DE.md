@@ -6,7 +6,10 @@ Die Dateien aus `docpair.nvim/` in deinen aktuellen, sauberen Git-Klon kopieren.
 Das vorhandene `.git` behalten. Das Quellpaket enthält kein `.git`, sodass es
 keine zweite Historie in deinen Klon einbringt. Änderungen prüfen, committen
 und anschließend wie gewohnt pushen. Danach das Plugin in Lazy aktualisieren
-und Neovim neu starten. Voraussetzung: Neovim 0.12 oder neuer, getestet 0.12.6.
+und Neovim neu starten. Voraussetzung: Neovim 0.10 oder neuer. Getestet: 0.10.4, 0.11.5 und 0.12.6.
+Das Ausblenden ganzer Kommentarzeilen benötigt 0.11 oder neuer; unter 0.10
+bleiben die Kommentare zusätzlich im Code sichtbar. `:checkhealth docpair`
+zeigt Version und Programmpfad des tatsächlich laufenden Neovim.
 
 ## Lazy-Konfiguration
 

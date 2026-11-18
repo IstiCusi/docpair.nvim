@@ -2,18 +2,18 @@
   "tests": 54,
   "failures": [],
   "errors": [],
-  "seconds": 41.44024696300039,
+  "seconds": 43.86974168300003,
   "timings": [
     {
       "case": "250003 lines, 50000 doc lines",
-      "open_seconds": 3.325328561004426,
-      "two_view_switches_seconds": 0.3458196810024674,
+      "open_seconds": 4.384515398000076,
+      "two_view_switches_seconds": 0.36077638499773457,
       "source_bytes": 28127818,
-      "document_edit_seconds": 0.4077178849984193
+      "document_edit_seconds": 0.49922267900183215
     },
     {
       "case": "80000 lines, 20000 comments",
-      "open_and_jump_seconds": 0.655182837996108
+      "open_and_jump_seconds": 0.7747863790027623
     }
   ]
 }
